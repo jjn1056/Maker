@@ -1,4 +1,4 @@
-package Maker;
+package maint::Maker;
 
 use strict;
 use warnings;
