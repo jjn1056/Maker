@@ -12,7 +12,7 @@ sub import {
   &use_module_install;
 }
 
-sub installer_mode { -e 'MANIFEST' }
+sub installer_mode { -e 'META.yml' }
 
 sub use_module_install {
   if( &installer_mode ) {
