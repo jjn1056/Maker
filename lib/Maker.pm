@@ -6,6 +6,9 @@ use warnings;
 our $_caller = scalar(caller(1));
 sub is_script { !$_caller }
 
+our $_has_errors = 0;
+sub has_errors { $_has_errors }
+
 sub import {
   strict->import;
   warnings->import;
@@ -98,7 +101,8 @@ sub list_author_dependencies {
 
 sub log_missing_author_dependencies {
   my @missing_modules = map { "\t$_\n" } @_;
-  die <<"ERR";
+  $_has_errors = 1;
+  print <<"ERR";
 
 You are in author mode but are missing the following modules:
 
@@ -117,6 +121,8 @@ If you think you are seeing this this message in error, please report it as a
 bug to the author.
 
 ERR
+
+  exit;
 
 }
 
@@ -147,7 +153,10 @@ sub run_if_script {
   }
 }
 
-END { &finalize_makefile unless is_script }
+END {
+  &finalize_makefile 
+    unless is_script || has_errors;
+}
 
 __PACKAGE__->run_if_script;
 
