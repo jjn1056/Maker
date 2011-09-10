@@ -9,10 +9,16 @@ sub is_script { !$_caller }
 our $_has_errors = 0;
 sub has_errors { $_has_errors }
 
+our $has_been_imported = 0;
 sub import {
-  strict->import;
-  warnings->import;
-  &use_module_install;
+  if($has_been_imported) {
+    return 1;
+  } else {
+    strict->import;
+    warnings->import;
+    &use_module_install;
+    $has_been_imported = 1;
+  }
 }
 
 sub installer_mode { -e 'META.yml' }
@@ -146,15 +152,18 @@ sub run {
 }
 
 sub run_if_script {
+  my @caller = caller(1);
   if(is_script) {
     &run;
+  } elsif($caller[1] eq 'Makefile.PL') {
+    __PACKAGE__->import;
   } else {
     1;
   }
 }
 
 END {
-  &finalize_makefile 
+  &finalize_makefile
     unless is_script || has_errors;
 }
 
