@@ -25,10 +25,10 @@ sub installer_mode { -e 'META.yml' }
 
 sub use_module_install {
   if( &installer_mode ) {
-    &_use_module_install;
+    _use_module_install;
   } else {
-    &_try_use_module_install
-      || &log_missing_author_dependencies('Module::Install');
+    _try_use_module_install
+      || log_missing_author_dependencies('Module::Install');
   }
 }
 
@@ -40,16 +40,16 @@ sub _use_module_install {
 
 sub _try_use_module_install {
   eval {
-    & _use_module_install;
+    _use_module_install;
     1;
   }
 }
 
 sub finalize_makefile {
   unless( &installer_mode ) {
-    my %module_install_author_plugins = &module_install_author_plugins;
+    my %module_install_author_plugins = module_install_author_plugins;
     my @missing = grep { !eval "package main; use $_; 1" } keys %module_install_author_plugins;
-    &log_missing_author_dependencies(@missing)
+    log_missing_author_dependencies(@missing)
       if @missing;
 
     foreach my $method_proto (values %module_install_author_plugins) {
@@ -79,6 +79,15 @@ sub generate_postamble {
 updatedeps :
 \tcpan-outdated -p | cpanm
 
+upload :
+\tcpan-upload $(DISTVNAME).tar$(SUFFIX)
+
+tags :
+\tgit commit -a -m "Release commit for $(VERSION)"
+\tgit tag v$(VERSION) -m "release $(VERSION)"
+\tgit push --tags
+\tgit push
+
 EOP
 }
 
@@ -99,7 +108,7 @@ sub extra_author_dependencies {
 }
 
 sub list_author_dependencies {
-  my %module_install_author_plugins = &module_install_author_plugins;
+  my %module_install_author_plugins = module_install_author_plugins;
   my @deps = (&extra_author_dependencies, keys %module_install_author_plugins);
   print join "\n", @deps;
   print "\n";
@@ -146,7 +155,7 @@ sub run {
   );
 
   Pod::Usage::pod2usage(1) if $show_help;
-  &list_author_dependencies if $show_authordeps;
+  list_author_dependencies if $show_authordeps;
 
   return 1;
 }
@@ -163,7 +172,7 @@ sub run_if_script {
 }
 
 END {
-  &finalize_makefile
+  finalize_makefile
     unless is_script || has_errors;
 }
 
