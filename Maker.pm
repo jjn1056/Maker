@@ -23,15 +23,6 @@ sub import {
 
 sub installer_mode { -e 'META.yml' }
 
-sub use_module_install {
-  if( &installer_mode ) {
-    _use_module_install;
-  } else {
-    _try_use_module_install
-      || log_missing_author_dependencies('Module::Install');
-  }
-}
-
 sub _use_module_install {
   package main;
   require inc::Module::Install;
@@ -43,6 +34,38 @@ sub _try_use_module_install {
     _use_module_install;
     1;
   }
+}
+
+sub use_module_install {
+  if( &installer_mode ) {
+    _use_module_install;
+  } else {
+    _try_use_module_install
+      || log_missing_author_dependencies('Module::Install');
+  }
+}
+
+sub module_install_author_plugins {
+  'Module::Install::ReadmeMarkdownFromPod' => 'readme_markdown_from_pod',
+  'Module::Install::ManifestSkip' => [manifest_skip => qw(clean) ],
+  'Module::Install::Repository' => 'auto_set_repository',
+  'Module::Install::Homepage' => 'auto_set_homepage',
+  'Module::Install::AutoManifest' => 'auto_manifest';
+}
+
+sub extra_author_dependencies {
+  'App::cpanminus',
+  'local::lib',
+  'App::local::lib::helper',
+  'Module::Install',
+  'App::cpanoutdated',
+}
+
+sub list_author_dependencies {
+  my %module_install_author_plugins = module_install_author_plugins;
+  my @deps = (&extra_author_dependencies, keys %module_install_author_plugins);
+  print join "\n", @deps;
+  print "\n";
 }
 
 sub finalize_makefile {
@@ -79,39 +102,13 @@ sub generate_postamble {
 updatedeps :
 \tcpan-outdated -p | cpanm
 
-upload :
-\tcpan-upload $(DISTVNAME).tar$(SUFFIX)
-
-tags :
+pushtags :
 \tgit commit -a -m "Release commit for $(VERSION)"
 \tgit tag v$(VERSION) -m "release $(VERSION)"
 \tgit push --tags
 \tgit push
 
 EOP
-}
-
-sub module_install_author_plugins {
-  'Module::Install::ReadmeMarkdownFromPod' => 'readme_markdown_from_pod',
-  'Module::Install::ManifestSkip' => [manifest_skip => qw(clean) ],
-  'Module::Install::Repository' => 'auto_set_repository',
-  'Module::Install::Homepage' => 'auto_set_homepage',
-  'Module::Install::AutoManifest' => 'auto_manifest';
-}
-
-sub extra_author_dependencies {
-  'App::cpanminus',
-  'local::lib',
-  'App::local::lib::helper',
-  'Module::Install',
-  'App::cpanoutdated',
-}
-
-sub list_author_dependencies {
-  my %module_install_author_plugins = module_install_author_plugins;
-  my @deps = (&extra_author_dependencies, keys %module_install_author_plugins);
-  print join "\n", @deps;
-  print "\n";
 }
 
 sub log_missing_author_dependencies {
