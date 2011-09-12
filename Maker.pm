@@ -1,4 +1,5 @@
-package Maker;
+package # Hide from PAUSE
+  Maker;
 
 use strict;
 use warnings;
