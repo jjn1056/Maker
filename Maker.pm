@@ -163,7 +163,7 @@ sub run_if_script {
   my @caller = caller(1);
   if(is_script) {
     &run;
-  } elsif($caller[1] eq 'Makefile.PL') {
+  } elsif($caller[1] =~m/Makefile\.PL$/) {
     __PACKAGE__->import;
   } else {
     1;
