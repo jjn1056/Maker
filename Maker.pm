@@ -52,7 +52,6 @@ sub module_install_author_plugins {
   'Module::Install::Homepage' => 'auto_set_homepage',
   'Module::Install::ManifestSkip' => [manifest_skip => qw(clean) ],
   'Module::Install::AutoManifest' => 'auto_manifest';
-
 }
 
 sub extra_author_dependencies {
