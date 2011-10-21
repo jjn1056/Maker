@@ -60,6 +60,7 @@ sub extra_author_dependencies {
   'App::local::lib::helper',
   'Module::Install',
   'App::cpanoutdated',
+  'CPAN::Uploader'
 }
 
 sub list_author_dependencies {
