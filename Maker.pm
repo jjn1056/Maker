@@ -47,11 +47,11 @@ sub use_module_install {
 }
 
 sub module_install_author_plugins {
-  'Module::Install::ReadmeMarkdownFromPod' => 'readme_markdown_from_pod',
-  'Module::Install::Repository' => 'auto_set_repository',
-  'Module::Install::Homepage' => 'auto_set_homepage',
-  'Module::Install::ManifestSkip' => [manifest_skip => qw(clean) ],
-  'Module::Install::AutoManifest' => 'auto_manifest';
+  +{ 'Module::Install::ReadmeMarkdownFromPod' => 'readme_markdown_from_pod' },
+  +{ 'Module::Install::Repository' => 'auto_set_repository' },
+  +{ 'Module::Install::Homepage' => 'auto_set_homepage' },
+  +{ 'Module::Install::ManifestSkip' => [manifest_skip => qw(clean) ]},
+  +{ 'Module::Install::AutoManifest' => 'auto_manifest' };
 }
 
 sub extra_author_dependencies {
@@ -64,20 +64,20 @@ sub extra_author_dependencies {
 }
 
 sub list_author_dependencies {
-  my %module_install_author_plugins = module_install_author_plugins;
-  my @deps = (&extra_author_dependencies, keys %module_install_author_plugins);
+  my @module_install_author_plugins = map { keys %$_ } module_install_author_plugins;
+  my @deps = (&extra_author_dependencies, @module_install_author_plugins);
   print join "\n", @deps;
   print "\n";
 }
 
 sub finalize_makefile {
   unless( &installer_mode ) {
-    my %module_install_author_plugins = module_install_author_plugins;
-    my @missing = grep { !eval "package main; use $_; 1" } keys %module_install_author_plugins;
+    my @module_install_author_plugins = map { keys %$_ } module_install_author_plugins;
+    my @missing = grep { !eval "package main; use $_; 1" } @module_install_author_plugins;
     log_missing_author_dependencies(@missing)
       if @missing;
 
-    foreach my $method_proto (values %module_install_author_plugins) {
+    foreach my $method_proto ( map { values %$_ } module_install_author_plugins) {
       my ($method, @args) = ref $method_proto ? @$method_proto : ($method_proto);
       SCOPE_NO_STRICT_REFS: {
         no strict 'refs';
